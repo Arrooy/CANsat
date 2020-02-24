@@ -1,0 +1,7 @@
+GPS:
+S'ha de modificar el buffer del serial1.
+En el pc de ladria el path es "/home/adria/.platformio/packages/framework-arduinoteensy/cores/teensy3/seral1.c"
+El fitxer a modificar es troba en AVR/serial1.c
+    #define SERIAL1_RX_BUFFER_SIZE     64 // number of incoming bytes to buffer
+I MODIFICARLA PER 
+    #define SERIAL1_RX_BUFFER_SIZE     255 // number of incoming bytes to buffer
