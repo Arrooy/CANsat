@@ -96,18 +96,20 @@ void BME_print()
   Serial.println();
 }
 
-void BME_log(unsigned long globalTime)
+void BME_log(uint32_t globalTime)
 {
   bme.takeForcedMeasurement();
+  
   File datalog = SD.open("BME.txt", FILE_WRITE);
   
-  String dataString = String(globalTime) + ":"+ //ms
+  String dataString = String(globalTime); + ":"+ //ms
                       String(bme.readTemperature()) + ":"+ //Celsius
                       String(bme.readPressure() / 100.0F) + ":" + //hPa
                       String(bme.readHumidity()); //0 - 100 % relative humidity.
   
+  
   if(datalog){
-    datalog.println(dataString);
+    datalog.println(dataString.c_str());
     datalog.close(); 
   }
 }

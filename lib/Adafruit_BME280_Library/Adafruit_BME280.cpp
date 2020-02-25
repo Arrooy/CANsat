@@ -98,7 +98,7 @@ bool Adafruit_BME280::init() {
   if (_cs == -1) {
     // I2C
     _wire->begin();
-	_wire->setClock(400000);
+	//_wire->setClock(400000);
   } else {
     digitalWrite(_cs, HIGH);
     pinMode(_cs, OUTPUT);
@@ -115,6 +115,7 @@ bool Adafruit_BME280::init() {
 
   // check if sensor, i.e. the chip ID is correct
   _sensorID = read8(BME280_REGISTER_CHIPID);
+  
   if (_sensorID != 0x60)
     return false;
 

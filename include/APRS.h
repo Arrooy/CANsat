@@ -6,7 +6,7 @@
 #include "aprs.h"
 
 
-void APRS_setup(int tx_periode);
+void APRS_setup();
 void APRS_broadcastLocation(double lati,double longui, const char *comment);
-
+bool APRS_not_busy();
 #endif

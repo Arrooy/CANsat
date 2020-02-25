@@ -1,6 +1,3 @@
-
-//#define MODE_SIMPLE
-
 //#define DEBUG
 
 #define NORMAL_MODE
@@ -19,6 +16,7 @@
 //Periods expressed in ms
 #define BME_LOG_PERIOD 2000
 #define MPU_LOG_PERIOD 100
+#define APRS_TX_PERIOD 2000
 
 //APRS
 //Set your callsign and SSID here. Common values for the SSID are

@@ -33,8 +33,6 @@
 #define MAXSENDBUFFER 500 // Used to allocate a static buffer on the stack to build the AX25 buffer
 
 uint16_t preambleFlags;
-uint16_t _tx_periode;
-uint32_t timeFromLastCall;
 
 // Convert latitude from a float to a string
 void latToStr(char * const s, const int size, float lat)
@@ -141,14 +139,15 @@ void logBuffer(const uint8_t * const buf, const int bitsSent,
   Serial.println();
 }
 
-void aprs_setup(const uint16_t p_preambleFlags, const uint8_t pttPin,
-    const uint16_t pttDelay, const uint32_t toneLength,
-    const uint32_t silenceLength,const uint16_t tx_periode)
+void aprs_setup(const uint16_t p_preambleFlags, const uint32_t toneLength,
+    const uint32_t silenceLength)
 {
   preambleFlags = p_preambleFlags;
-  timeFromLastCall = 0;
-  _tx_periode = tx_periode;
-  afsk_setup(pttPin, pttDelay, toneLength, silenceLength);
+  afsk_setup(toneLength, silenceLength);
+}
+
+bool aprs_busy(){
+  return afsk_busy();
 }
 
 // This can operate in two modes, PTT or VOX
@@ -168,13 +167,6 @@ void aprs_send(const PathAddress * const paths, const int nPaths,
 {
   uint8_t buf[MAXSENDBUFFER];
   char temp[12];
-
-  if(afsk_busy() || millis() - timeFromLastCall < _tx_periode){
-    //Serial.println("Se ha intentado tx en APRS sin terminar la trama anterior.");
-    return;
-  }
-  
-  timeFromLastCall = millis();
 
   ax25_initBuffer(buf, sizeof(buf));
 
@@ -216,17 +208,16 @@ void aprs_send(const PathAddress * const paths, const int nPaths,
 
   ax25_send_footer();
 
-  //Serial.flush(); // Make sure all Serial data (which is based on interrupts) is done before you start sending.
+ // Serial.flush(); // Make sure all Serial data (which is based on interrupts) is done before you start sending.
 
   // Set the buffer of bits we are going to send
   afsk_set_buffer(buf, ax25_getPacketSize());
 
-  //Serial.flush(); // Wait until all characters are sent
+ // Serial.flush(); // Wait until all characters are sent
 
   // OK, no more operations until this is done.
   afsk_start();
-  //while (afsk_busy())
-  ///  ;
+
   //TODO: ELIMINAR LA SEGUENT LINEA
   //logBuffer(buf, ax25_getPacketSize(), dayOfMonth, hour, min);
 }

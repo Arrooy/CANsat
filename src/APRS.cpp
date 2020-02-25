@@ -8,20 +8,18 @@ struct PathAddress addresses[] = {
 };
 
 // setup() method runs once, when the sketch starts
-void APRS_setup(int tx_periode)
+void APRS_setup()
 {
   // Set up the APRS module
   aprs_setup(50, // number of preamble flags to send
-       0,  // Use PTT pin
-       100,// ms to wait after PTT to transmit
        0,
-       0, // No VOX ton
-       tx_periode); //Transmit Periode in ms
+       0); // No VOX ton
 }
 
 // Function to broadcast your location
 void APRS_broadcastLocation(double lati,double longui, const char *comment)
 {
+  
   // If above 5000 feet switch to a single hop path
   int nAddresses;
   // APRS recomendations for > 5000 feet is:
@@ -44,4 +42,9 @@ void APRS_broadcastLocation(double lati,double longui, const char *comment)
             SYMBOL_TABLE,
             SYMBOL_CHAR,
             comment);
+    
+}
+
+bool APRS_not_busy(){
+  return !aprs_busy();
 }

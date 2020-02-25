@@ -32,10 +32,7 @@ struct PathAddress
 };
 
 void aprs_setup(const uint16_t preambleFlags, // number of preambleFlags to send, must be at least 1 to frame packet
-    const uint8_t pttPin, // Use PTT pin, 0 = do not use PTT
-    const uint16_t pttDelay, // ms to wait after PTT to transmit
-    const uint32_t toneLength, const uint32_t silenceLength, // Emit sub-audio tone before packet to trigger VOX
-    const uint16_t tx_periode); //Frequency of emmision.
+    const uint32_t toneLength, const uint32_t silenceLength); // Emit sub-audio tone before packet to trigger VOX
     
 
 void aprs_send(const PathAddress * const paths, const int nPaths,
@@ -45,5 +42,9 @@ void aprs_send(const PathAddress * const paths, const int nPaths,
     const float altitude, // meters
     const uint16_t heading, // degrees
     const float speed, const char symbolTableIndicator, const char symbol,
-    const char * const comment); // Synchronized ... won't return until the entire packet is sent
+    const char * const comment);
+
+
+bool aprs_busy();
+
 #endif

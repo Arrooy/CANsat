@@ -29,7 +29,7 @@
 #define SAMPLES_PER_CYCLE 512 // How many samples in our sin-wave table
 
 //Note: Initially configured as 8us. 
-#define INTERRUPT_RATE 32  // in Microseconds
+#define INTERRUPT_RATE 8//32  // in Microseconds
 #define PLAYBACK_RATE (1000000.0f / INTERRUPT_RATE)     // In Hertz
 
 // 1200 Baud settings
@@ -145,8 +145,6 @@ static uint32_t packet_pos;       // Next bit to be sent out
 static bool fDoTone;
 static uint32_t toneStop, silenceStop;
 
-static uint8_t pttPin; // 0 indicates no PTT
-static uint16_t pttDelay;
 static uint32_t toneLength;
 static uint32_t silenceLength;
 
@@ -173,7 +171,7 @@ inline uint16_t afsk_read_sample(const uint16_t * const sine_table,
 
 inline void afsk_output_sample(uint16_t b)
 {
-  analogWrite(A21, b/20); //Modificar.
+  analogWrite(A21, b / 20); //Modificar.
 }
 
 void afsk_timer_stop()
@@ -200,7 +198,6 @@ void interrupt(void)
         fDoTone = false;
         currentStride = SAMPLE_STRIDE_MARK_FIXED_PNT;
         currentSample = 0;
-
       }
     }
   } else {
@@ -209,11 +206,6 @@ void interrupt(void)
     // If done sending packet
     if (packet_pos == afsk_packet_size) {
       afsk_timer_stop();  // Disable timer
-      delay(100); // Leave key open for .1 seconds
-      if (pttPin) {
-        pinMode(pttPin, OUTPUT);
-        digitalWrite(pttPin, LOW);
-      }
       busy = false;         // End of transmission
       return;       // Done.
     }
@@ -243,30 +235,21 @@ void interrupt(void)
       (uint16_t) ((currentSample >> FIXED_PNT_BITS) & (SAMPLES_PER_CYCLE - 1)));
   totalSamplesSent += 1;
   afsk_output_sample(s);
+  
 }
 
 void afsk_timer_start()
 {
-  timer.priority(100);
+  timer.priority(5);
   timer.begin(interrupt, INTERRUPT_RATE);
 }
 
-void afsk_setup(const uint8_t p_pttPin, // Use PTT pin, 0 = do not use PTT
-    const uint16_t p_pttDelay, // ms to wait after PTT to transmit
-    const uint32_t p_toneLength, const uint32_t p_silenceLength)
+void afsk_setup(const uint32_t p_toneLength, const uint32_t p_silenceLength)
 {
 
-  pttPin = p_pttPin;
-  pttDelay = p_pttDelay;
   toneLength = p_toneLength;
   silenceLength = p_silenceLength;
 
-  if (p_pttPin) {
-    // Setup radio
-    // Configure pins
-    pinMode(pttPin, OUTPUT);
-    digitalWrite(pttPin, LOW);
-  }
   analogWriteResolution(12);
   afsk_output_sample(2047); // 50%
 }
@@ -305,14 +288,8 @@ void afsk_start()
   sine_table_switcher =
       ((uint32_t) SIN_TABLE_MARK ^ (uint32_t) SIN_TABLE_SPACE);
 
-  if (pttPin) {
-    // Key the radio
-    // Configure pins
-    pinMode(pttPin, INPUT);
-    delay(pttDelay);
-  }
-
   // Start transmission
+  
   afsk_timer_start();
 }
 

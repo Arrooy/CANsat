@@ -8,5 +8,5 @@ unsigned long BME_getPressure();
 char BME_getHumidity();
 float BME_getAltitude();
 void BME_print();
-void BME_log(unsigned long globalTime);
+void BME_log(uint32_t globalTime);
 #endif

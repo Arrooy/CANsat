@@ -8,6 +8,7 @@
 IntervalTimer PeriodicCaller;
 TinyGPS gps;
 
+void magic();
 void GPS_printStats();
 
 //Note: The GPS takes 3.50s to start blinking the blue led
@@ -28,8 +29,8 @@ void GPS_begin()
     }
   }
 
-  PeriodicCaller.priority(250);
-  PeriodicCaller.begin(GPS_read, 230000);
+  PeriodicCaller.priority(200);
+  PeriodicCaller.begin(GPS_read, 150000);
   //With 250000us, the buffer fills up to 240 Bytes.
   //With 200000us, the buffer fills up to 192 Bytes.
   //With 150000us, the buffer fills up to 144 Bytes.
@@ -42,7 +43,10 @@ void GPS_read()
   unsigned long fix_age; // returns +- latitude/longitude in degrees
  
   bool encodedDone = false;
- 
+  
+  //We dont want to call again untill the function is ended.
+  PeriodicCaller.end();
+  
   PRINT(GPS_Serial.available());
   PRINTLN(" Bytes ready to read.");
  
@@ -57,14 +61,18 @@ void GPS_read()
   } 
   
   //Es fa el comput a fora el bucle, per buidar completament el buffer del rx.
-  if(encodedDone){
-    gps.f_get_position(&flat, &flon, &fix_age);
+  if(encodedDone && APRS_not_busy()){
     GPS_log();
-    PRINTLN("APRS broadcasting...INIT");
-    //APRS_broadcastLocation(flat, flon, "Hi from Arroyos' house :)");
-    APRS_broadcastLocation(0.0f,0.0f, "Hi from Arroyos' house :)");
-    PRINTLN("APRS broadcasting...END");
   }
+
+  //ReEnable future readings
+  PeriodicCaller.begin(GPS_read, 150000);
+}
+
+void GPS_getPosition(float * lat,float * lon)
+{
+  unsigned long fix_age;
+  gps.f_get_position(lat, lon, &fix_age);
 }
 
 void GPS_printStats(){
@@ -91,7 +99,7 @@ void GPS_log()
   gps.get_datetime(&date, &time, &fix_age);
   
   gps.f_get_position(&flat, &flon, &fix_age);
-
+  
   File datalog = SD.open("GPS.txt", FILE_WRITE);
 
   String dataString = String(time)              + ":" + // HHMMSSCC nidea que es cc, millor mirar TinyGPS. 
